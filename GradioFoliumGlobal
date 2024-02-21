@@ -1,0 +1,41 @@
+#by David Ruiz a.k.a @viajatech 
+#más tutoriales en; https://linktr.ee/viajatech
+
+
+
+import gradio as gr
+import folium
+
+def generate_map(dummy):
+    # Create a map centered around the middle of the lost territories
+    m = folium.Map(location=[36.7783, -119.4179], zoom_start=5)
+
+    # Define the territories as a list of states
+    territories = ['California', 'Nevada', 'Utah', 'Arizona', 'New Mexico', 'Colorado', 'Wyoming', 'Texas']
+
+    # Define the geojson url for US states
+    url = (
+        "https://raw.githubusercontent.com/python-visualization/folium/master/examples/data"
+    )
+    us_states = f"{url}/us-states.json"
+
+    # Function to determine the color of the state
+    def style_function(feature):
+        if feature['properties']['name'] in territories:
+            return {'fillColor': '#ff0000', 'color': 'black'}
+        else:
+            return {'fillColor': '#ffff00', 'color': 'black'}
+
+    # Add the colored layer to the map
+    folium.GeoJson(
+        us_states,
+        style_function=style_function
+    ).add_to(m)
+
+    # Save it to a file
+    m.save('map.html')
+
+    return 'Map has been saved as map.html'
+
+iface = gr.Interface(fn=generate_map, inputs="button", outputs="text")
+iface.launch()
