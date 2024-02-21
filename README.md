@@ -2,3 +2,4 @@ Código en python que crea un mapa con folium e interfaz interactiva con gradio,
 Aquí una muestra de lo que guarda; 
 
 ![](https://github.com/davidruizduarte/MexicosTerritorialLostGlobal/blob/main/ipiccy_image.jpg)
+![](https://github.com/davidruizduarte/MexicosTerritorialLostGlobal/blob/main/GRADIO.png)
