@@ -1,0 +1,80 @@
+#David Ruiz
+#version 2024 Junio
+#Mapa mejorado
+#Social media @viajatech
+
+import gradio as gr
+import folium
+from folium.plugins import MarkerCluster
+
+def generate_map(selected_territories):
+    m = folium.Map(location=[36.7783, -119.4179], zoom_start=4)
+
+    all_territories = ['California', 'Nevada', 'Utah', 'Arizona', 'New Mexico', 'Colorado', 'Wyoming', 'Texas']
+    
+    url = "https://raw.githubusercontent.com/python-visualization/folium/master/examples/data"
+    us_states = f"{url}/us-states.json"
+
+    def style_function(feature):
+        if feature['properties']['name'] in selected_territories:
+            return {'fillColor': '#ff0000', 'color': 'black', 'weight': 2, 'fillOpacity': 0.7}
+        elif feature['properties']['name'] in all_territories:
+            return {'fillColor': '#ff9999', 'color': 'black', 'weight': 2, 'fillOpacity': 0.5}
+        else:
+            return {'fillColor': '#ffff00', 'color': 'black', 'weight': 1, 'fillOpacity': 0.3}
+
+    state_info = {
+        'California': ('Adquirido por EE.UU. en 1848 tras el Tratado de Guadalupe Hidalgo.', [36.7783, -119.4179]),
+        'Nevada': ('Parte de la Cesión Mexicana de 1848.', [39.8766, -116.4230]),
+        'Utah': ('Cedido a EE.UU. en 1848 como parte del Tratado de Guadalupe Hidalgo.', [39.3210, -111.0937]),
+        'Arizona': ('La parte sur fue adquirida en la Compra de Gadsden en 1853.', [34.0489, -111.0937]),
+        'New Mexico': ('Territorio dividido entre EE.UU. y México en 1848 y 1853.', [34.5199, -105.8701]),
+        'Colorado': ('La parte sur era territorio mexicano hasta 1848.', [39.0598, -105.3111]),
+        'Wyoming': ('La esquina suroeste era parte de la Cesión Mexicana.', [43.0760, -107.2903]),
+        'Texas': ('Declaró su independencia de México en 1836 y se unió a EE.UU. en 1845.', [31.9686, -99.9018])
+    }
+
+    geojson = folium.GeoJson(
+        us_states,
+        style_function=style_function,
+        tooltip=folium.GeoJsonTooltip(fields=['name'], aliases=['Estado:'])
+    )
+    
+    geojson.add_to(m)
+
+    marker_cluster = MarkerCluster().add_to(m)
+
+    for state in selected_territories:
+        folium.Marker(
+            location=state_info[state][1],
+            popup=state_info[state][0],
+            tooltip=state
+        ).add_to(marker_cluster)
+
+    folium.LayerControl().add_to(m)
+
+    legend_html = '''
+         <div style="position: fixed; 
+                     bottom: 50px; left: 50px; width: 220px; height: 90px; 
+                     border:2px solid grey; z-index:9999; font-size:14px;
+                     background-color:white;
+                     ">&nbsp; Leyenda <br>
+           &nbsp; <i class="fa fa-map-marker fa-2x" style="color:red"></i>&nbsp; Territorio seleccionado <br>
+           &nbsp; <i class="fa fa-map-marker fa-2x" style="color:#ff9999"></i>&nbsp; Territorio no seleccionado <br>
+           &nbsp; <i class="fa fa-map-marker fa-2x" style="color:yellow"></i>&nbsp; Otros estados
+         </div>
+         '''
+    m.get_root().html.add_child(folium.Element(legend_html))
+
+    m.save('map.html')
+    return 'map.html'
+
+iface = gr.Interface(
+    fn=generate_map, 
+    inputs=gr.CheckboxGroup(['California', 'Nevada', 'Utah', 'Arizona', 'New Mexico', 'Colorado', 'Wyoming', 'Texas']),
+    outputs="file",
+    title="Mapa Interactivo de Territorios Perdidos por México",
+    description="Selecciona los territorios que quieres resaltar en el mapa."
+)
+
+iface.launch()
